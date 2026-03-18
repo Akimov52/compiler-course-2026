@@ -35,10 +35,11 @@ public:
   }
 
 private:
-  std::unordered_map<const VarDecl*, MutationInfo> mutations;
+  std::unordered_map<const VarDecl *, MutationInfo> mutations;
 
   void inspectLValue(Expr *E, bool indirect) {
-    if (!E) return;
+    if (!E)
+      return;
     E = E->IgnoreParenCasts();
 
     if (auto *DRE = dyn_cast<DeclRefExpr>(E)) {
@@ -73,18 +74,21 @@ private:
 
 class ConstInserter : public RecursiveASTVisitor<ConstInserter> {
 public:
-  ConstInserter(Rewriter &R, MutationCollector &C) : rewriter(R), collector(C) {}
+  ConstInserter(Rewriter &R, MutationCollector &C)
+      : rewriter(R), collector(C) {}
 
   bool VisitVarDecl(VarDecl *VD) {
     if (!VD->isLocalVarDecl() && !isa<ParmVarDecl>(VD))
       return true;
 
     QualType QT = VD->getType();
-    if (QT.isNull()) return true;
+    if (QT.isNull())
+      return true;
 
     bool isPtr = QT->isPointerType();
     bool isRef = QT->isReferenceType();
-    if (!isPtr && !isRef) return true;
+    if (!isPtr && !isRef)
+      return true;
 
     MutationInfo info = collector.getInfo(VD);
     QualType pointee = isRef ? QT->getPointeeType() : QT->getPointeeType();
@@ -96,7 +100,7 @@ public:
         rewriter.InsertTextBefore(VD->getBeginLoc(), "const ");
     } else if (isPtr) {
       bool needConstPointee = !info.pointeeMutated && !pointeeIsConst;
-      bool needConstPtr    = !info.pointerMutated && !ptrIsConst;
+      bool needConstPtr = !info.pointerMutated && !ptrIsConst;
 
       if (needConstPointee)
         rewriter.InsertTextBefore(VD->getBeginLoc(), "const ");
@@ -128,7 +132,8 @@ public:
       llvm::outs() << std::string(buf->begin(), buf->end());
     } else {
       bool invalid = false;
-      llvm::StringRef original = Ctx.getSourceManager().getBufferData(mainID, &invalid);
+      llvm::StringRef original =
+          Ctx.getSourceManager().getBufferData(mainID, &invalid);
       if (!invalid)
         llvm::outs() << original;
     }
@@ -151,4 +156,5 @@ protected:
 } // namespace
 
 static FrontendPluginRegistry::Add<ConstifyAction>
-    X("constify_plugin", "Automatically add const to unmodified pointers and references");
+    X("constify_plugin",
+      "Automatically add const to unmodified pointers and references");
