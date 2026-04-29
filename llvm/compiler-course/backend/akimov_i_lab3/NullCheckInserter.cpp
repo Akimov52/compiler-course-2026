@@ -10,10 +10,12 @@
 using namespace llvm;
 
 namespace {
+
 class NullCheckInserter : public MachineFunctionPass {
 public:
   static char ID;
   NullCheckInserter() : MachineFunctionPass(ID) {}
+
   bool runOnMachineFunction(MachineFunction &MF) override;
 
 private:
@@ -25,7 +27,8 @@ private:
 
 char NullCheckInserter::ID = 0;
 
-bool NullCheckInserter::isDereference(const MachineInstr &MI, unsigned &PtrReg) {
+bool NullCheckInserter::isDereference(const MachineInstr &MI,
+                                      unsigned &PtrReg) {
   if (!MI.mayLoad() && !MI.mayStore())
     return false;
 
@@ -51,12 +54,14 @@ void NullCheckInserter::insertNullCheck(MachineBasicBlock &MBB,
                                         const TargetInstrInfo *TII) {
   MachineFunction &MF = *MBB.getParent();
 
-  MachineBasicBlock *FailBlock = MF.CreateMachineBasicBlock(MBB.getBasicBlock());
+  MachineBasicBlock *FailBlock =
+      MF.CreateMachineBasicBlock(MBB.getBasicBlock());
   MF.insert(++MBB.getIterator(), FailBlock);
 
   BuildMI(MBB, MI, DebugLoc(), TII->get(X86::TEST64rr))
       .addReg(PtrReg)
       .addReg(PtrReg);
+
   BuildMI(MBB, MI, DebugLoc(), TII->get(X86::JCC_1))
       .addMBB(FailBlock)
       .addImm(X86::COND_E);
@@ -83,6 +88,6 @@ bool NullCheckInserter::runOnMachineFunction(MachineFunction &MF) {
 
 } // namespace
 
-static RegisterPass<NullCheckInserter> X("null-check-inserter",
-                                         "Insert NULL check before pointer dereference",
-                                         false, false);
+static RegisterPass<NullCheckInserter>
+    X("null-check-inserter", "Insert NULL check before pointer dereference",
+      false, false);
