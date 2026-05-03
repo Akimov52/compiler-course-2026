@@ -18,9 +18,14 @@
 ...
 ---
 # CHECK-LABEL: name: load_ptr
-# CHECK: TEST64rr
-# CHECK-NEXT: JCC_1
-# CHECK: MOV32rm
+# CHECK: [[REG:%[0-9]+]]:gr64 = COPY $rdi
+# CHECK: TEST64rr [[REG]], [[REG]], implicit-def $eflags
+# CHECK-NEXT: JCC_1 %bb.1, 4, implicit $eflags
+# CHECK: MOV32rm [[REG]]
+# CHECK: RET
+# CHECK: bb.1:
+# CHECK: CALL64pcrel32 {{[@&]}}abort
+# CHECK: RET
 name:            load_ptr
 tracksRegLiveness: true
 liveins:
@@ -49,9 +54,14 @@ body:             |
 
 ---
 # CHECK-LABEL: name: store_ptr
-# CHECK: TEST64rr
-# CHECK-NEXT: JCC_1
-# CHECK: MOV32mr
+# CHECK: [[REG:%[0-9]+]]:gr64 = COPY $rdi
+# CHECK: TEST64rr [[REG]], [[REG]], implicit-def $eflags
+# CHECK-NEXT: JCC_1 %bb.1, 4, implicit $eflags
+# CHECK: MOV32mr [[REG]]
+# CHECK: RET
+# CHECK: bb.1:
+# CHECK: CALL64pcrel32 {{[@&]}}abort
+# CHECK: RET
 name:            store_ptr
 tracksRegLiveness: true
 liveins:
