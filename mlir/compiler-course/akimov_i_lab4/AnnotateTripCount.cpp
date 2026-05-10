@@ -1,7 +1,7 @@
 #include "mlir/Dialect/Affine/IR/AffineOps.h"
 #include "mlir/IR/BuiltinAttributes.h"
-#include "mlir/IR/BuiltinTypes.h"
 #include "mlir/IR/BuiltinOps.h"
+#include "mlir/IR/BuiltinTypes.h"
 #include "mlir/Pass/Pass.h"
 #include "mlir/Tools/Plugins/PassPlugin.h"
 #include "llvm/Support/raw_ostream.h"
@@ -44,8 +44,8 @@ public:
         return;
       }
 
-      IntegerAttr attr = IntegerAttr::get(
-          IntegerType::get(forOp.getContext(), 64), tripCount);
+      IntegerAttr attr =
+          IntegerAttr::get(IntegerType::get(forOp.getContext(), 64), tripCount);
       forOp->setAttr("trip_count", attr);
     });
   }
